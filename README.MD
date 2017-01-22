@@ -16,5 +16,5 @@ pip3 install slackclient
     ```
 - 复制`conf.py.sample`并修改文件名为`conf.py`，
 - 根据注释修改刷票条件
-- `python3 12306.py`启动脚本。
+- `python3 12306.py`启动脚本，验证脚本是否可以正确执行。
     - 注：你可以用supervisor来管理该脚本
