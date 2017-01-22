@@ -31,9 +31,9 @@ def send_message(message):
 def get_train_info(train_date, from_station, to_station='HZH') -> List[Mapping[str, str]]:
     # url = "https://kyfw.12306.cn/otn/leftTicket/queryZ"
     url = 'https://kyfw.12306.cn/otn/leftTicket/queryZ?' \
-          'leftTicketDTO.train_date={leftTicketDTO.train_date}' \
-          '&leftTicketDTO.from_station={leftTicketDTO.from_station}' \
-          '&leftTicketDTO.to_station={leftTicketDTO.to_station}' \
+          'leftTicketDTO.train_date={train_date}' \
+          '&leftTicketDTO.from_station={from_station}' \
+          '&leftTicketDTO.to_station={to_station}' \
           '&purpose_codes=ADULT'
     params = {
         'train_date': train_date,  # leftTicketDTO.
