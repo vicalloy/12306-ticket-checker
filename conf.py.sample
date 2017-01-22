@@ -1,0 +1,25 @@
+SLACK_TOKEN = ''  # slack bot的SLACK_API_TOKEN，如需要用其消息通知机制，请修改send_message实现
+
+TRAIN_DATES = ['2017-02-01', '2017-02-02', '2017-02-03', '2017-02-04']  # 需要抢票的日期
+
+FROM_STATIONS = ['WHN']  # 出发站点，城市对应的编码请自行根据 https://kyfw.12306.cn/otn/leftTicket/init 找到
+
+TO_STATIONS = ['HZH']  # 达到站
+
+TICKET_TYPES = ['swz', 'zy', 'ze', 'rw', 'yw']  # 车票类型，参考 TICKET_TYPE_MAP
+
+NEED_COUNT = 2  # 需要抢票的张数，低于这个数不提示
+
+TICKET_TYPE_MAP = {
+    'swz': '商务座',
+    'tz': '特等座',
+    'zy': '一等座',
+    'ze': '二等座',
+    'gr': '高级软卧',
+    'rw': '软卧',
+    'yw': '硬卧',
+    'yz': '硬座',
+    'rz': '软座',
+    'wz': '无座',
+}
+
