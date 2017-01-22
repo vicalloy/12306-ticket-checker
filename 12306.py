@@ -29,17 +29,25 @@ def send_message(message):
 
 
 def get_train_info(train_date, from_station, to_station='HZH') -> List[Mapping[str, str]]:
-    url = "https://kyfw.12306.cn/otn/leftTicket/queryZ"
+    # url = "https://kyfw.12306.cn/otn/leftTicket/queryZ"
+    url = 'https://kyfw.12306.cn/otn/leftTicket/queryZ?' \
+          'leftTicketDTO.train_date={leftTicketDTO.train_date}' \
+          '&leftTicketDTO.from_station={leftTicketDTO.from_station}' \
+          '&leftTicketDTO.to_station={leftTicketDTO.to_station}' \
+          '&purpose_codes=ADULT'
     params = {
-        'leftTicketDTO.train_date': train_date,
-        'leftTicketDTO.from_station': from_station,
-        'leftTicketDTO.to_station': to_station,
+        'train_date': train_date,  # leftTicketDTO.
+        'from_station': from_station,  # leftTicketDTO.
+        'to_station': to_station,  # leftTicketDTO.
         'purpose_codes': 'ADULT',
     }
     train_info_list = []
     # noinspection PyBroadException
     try:
-        r = requests.get(url, params=params, verify=False)
+        # FIXME use params will fail on some server, the reason is unkonwn
+        # r = requests.get(url, params=params, verify=False)
+        url = url.format(**params)
+        r = requests.get(url, verify=False)
         return_data = r.json()
         train_info_list = [e['queryLeftNewDTO'] for e in return_data['data']]
         print('get_train_info succ')
