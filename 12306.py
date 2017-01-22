@@ -56,6 +56,34 @@ def get_train_info(train_date, from_station, to_station='HZH') -> List[Mapping[s
     return train_info_list
 
 
+def get_left_ticket(ticket_type: str, train_info) -> int:
+    """
+    str_count: --,无,有,1,12
+    """
+    str_count = train_info.get('%s_num' % ticket_type)
+    if str_count == '有':
+        return 9999
+    try:
+        return int(str_count)
+    except ValueError:
+        return 0
+
+
+def send_notification(train_info, ticket_type, train_date, from_station, to_station):
+    message = ('日期：{train_date} 类型：{ticket_type} 车次：{train_code} '
+               '开车时间：{start_time}  到达时间：{arrive_time} 余票：{left_ticket} '
+               '历时:{lishi} 出发：{from_station} 达到：{to_station}').format(
+        train_date=train_date, from_station=from_station, to_station=to_station,
+        start_time=train_info['start_time'],
+        ticket_type=train_info.get('train_class_name'),
+        left_ticket=train_info.get('%s_num' % ticket_type),
+        lishi=train_info.get('lishi'),
+        arrive_time=train_info.get('arrive_time'),
+        train_code=train_info['station_train_code'],
+    )
+    send_message(message)
+
+
 class TicketChecker(object):
     def __init__(
             self, train_dates: List[str], from_stations: List[str],
@@ -75,21 +103,6 @@ class TicketChecker(object):
                 ok_ticket_types.append(ticket_type)
         return ok_ticket_types
 
-    @staticmethod
-    def send_notification(train_info, ticket_type, train_date, from_station, to_station):
-        message = ('日期：{train_date} 类型：{ticket_type} 车次：{train_code} '
-                   '开车时间：{start_time}  到达时间：{arrive_time} 余票：{left_ticket} '
-                   '历时:{lishi} 出发：{from_station} 达到：{to_station}').format(
-            train_date=train_date, from_station=from_station, to_station=to_station,
-            start_time=train_info['start_time'],
-            ticket_type=train_info.get('train_class_name'),
-            left_ticket=train_info.get('%s_num' % ticket_type),
-            lishi=train_info.get('lishi'),
-            arrive_time=train_info.get('arrive_time'),
-            train_code=train_info['station_train_code'],
-        )
-        send_message(message)
-
     def check_ticket(self):
         for train_date in self.train_dates:
             for from_station in self.from_stations:
@@ -99,20 +112,7 @@ class TicketChecker(object):
                     for train_info in train_info_list:
                         ok_ticket_types = self.get_ok_ticket_types(train_info)
                         for ok_ticket_type in ok_ticket_types:
-                            self.send_notification(train_info, ok_ticket_type, train_date, from_station, to_station)
-
-
-def get_left_ticket(ticket_type: str, train_info) -> int:
-    """
-    str_count: --,无,有,1,12
-    """
-    str_count = train_info.get('%s_num' % ticket_type)
-    if str_count == '有':
-        return 9999
-    try:
-        return int(str_count)
-    except ValueError:
-        return 0
+                            send_notification(train_info, ok_ticket_type, train_date, from_station, to_station)
 
 
 ticket_checker = TicketChecker(TRAIN_DATES, FROM_STATIONS, TO_STATIONS, TICKET_TYPES, NEED_COUNT)
