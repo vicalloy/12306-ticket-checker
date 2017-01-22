@@ -36,10 +36,10 @@ def get_train_info(train_date, from_station, to_station='HZH') -> List[Mapping[s
         'leftTicketDTO.to_station': to_station,
         'purpose_codes': 'ADULT',
     }
-    r = requests.get(url, params=params, verify=False)
     train_info_list = []
     # noinspection PyBroadException
     try:
+        r = requests.get(url, params=params, verify=False)
         return_data = r.json()
         train_info_list = [e['queryLeftNewDTO'] for e in return_data['data']]
         print('get_train_info succ')
