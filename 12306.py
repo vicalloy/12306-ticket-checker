@@ -26,7 +26,6 @@ TICKET_TYPE_MAP = {
 }
 
 
-
 def slack_send_message(message):
     sc = SlackClient(SLACK_TOKEN)
 
@@ -40,6 +39,22 @@ def slack_send_message(message):
 def send_message(message):
     slack_send_message(message)
     print(message)
+
+
+def send_notification(train_info, ticket_type, train_date, from_station, to_station):
+    message = ('日期：{train_date} 类型：{ticket_type} 车次：{train_code} '
+               '开车时间：{start_time}  到达时间：{arrive_time} 车票类型:{ticket_type} '
+               '余票：{left_ticket} '
+               '历时:{lishi} 出发：{from_station} 达到：{to_station}').format(
+        train_date=train_date, from_station=from_station, to_station=to_station,
+        start_time=train_info['start_time'],
+        ticket_type=TICKET_TYPE_MAP.get(ticket_type, ""),
+        left_ticket=train_info.get('%s_num' % ticket_type),
+        lishi=train_info.get('lishi'),
+        arrive_time=train_info.get('arrive_time'),
+        train_code=train_info['station_train_code'],
+    )
+    send_message(message)
 
 
 def get_train_info(train_date, from_station, to_station='HZH') -> List[Mapping[str, str]]:
@@ -81,22 +96,6 @@ def get_left_ticket(ticket_type: str, train_info) -> int:
         return int(str_count)
     except ValueError:
         return 0
-
-
-def send_notification(train_info, ticket_type, train_date, from_station, to_station):
-    message = ('日期：{train_date} 类型：{ticket_type} 车次：{train_code} '
-               '开车时间：{start_time}  到达时间：{arrive_time} 车票类型:{ticket_type} '
-               '余票：{left_ticket} '
-               '历时:{lishi} 出发：{from_station} 达到：{to_station}').format(
-        train_date=train_date, from_station=from_station, to_station=to_station,
-        start_time=train_info['start_time'],
-        ticket_type=TICKET_TYPE_MAP.get(ticket_type, ""),
-        left_ticket=train_info.get('%s_num' % ticket_type),
-        lishi=train_info.get('lishi'),
-        arrive_time=train_info.get('arrive_time'),
-        train_code=train_info['station_train_code'],
-    )
-    send_message(message)
 
 
 class TicketChecker(object):
