@@ -12,6 +12,20 @@ from conf import TRAIN_DATES, FROM_STATIONS, TO_STATIONS, TICKET_TYPES, NEED_COU
 
 INTERVAL_FOR_QUERY = 6
 
+TICKET_TYPE_MAP = {
+    'swz': '商务座',
+    'tz': '特等座',
+    'zy': '一等座',
+    'ze': '二等座',
+    'gr': '高级软卧',
+    'rw': '软卧',
+    'yw': '硬卧',
+    'yz': '硬座',
+    'rz': '软座',
+    'wz': '无座',
+}
+
+
 
 def slack_send_message(message):
     sc = SlackClient(SLACK_TOKEN)
@@ -71,11 +85,12 @@ def get_left_ticket(ticket_type: str, train_info) -> int:
 
 def send_notification(train_info, ticket_type, train_date, from_station, to_station):
     message = ('日期：{train_date} 类型：{ticket_type} 车次：{train_code} '
-               '开车时间：{start_time}  到达时间：{arrive_time} 余票：{left_ticket} '
+               '开车时间：{start_time}  到达时间：{arrive_time} 车票类型:{ticket_type} '
+               '余票：{left_ticket} '
                '历时:{lishi} 出发：{from_station} 达到：{to_station}').format(
         train_date=train_date, from_station=from_station, to_station=to_station,
         start_time=train_info['start_time'],
-        ticket_type=train_info.get('train_class_name'),
+        ticket_type=TICKET_TYPE_MAP.get(ticket_type, ""),
         left_ticket=train_info.get('%s_num' % ticket_type),
         lishi=train_info.get('lishi'),
         arrive_time=train_info.get('arrive_time'),

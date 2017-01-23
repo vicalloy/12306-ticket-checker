@@ -10,17 +10,3 @@ TO_STATIONS = ['HZH']  # 达到站
 TICKET_TYPES = ['swz', 'zy', 'ze', 'rw', 'yw']  # 车票类型，参考 TICKET_TYPE_MAP
 
 NEED_COUNT = 2  # 需要抢票的张数，低于这个数不提示
-
-TICKET_TYPE_MAP = {
-    'swz': '商务座',
-    'tz': '特等座',
-    'zy': '一等座',
-    'ze': '二等座',
-    'gr': '高级软卧',
-    'rw': '软卧',
-    'yw': '硬卧',
-    'yz': '硬座',
-    'rz': '软座',
-    'wz': '无座',
-}
-
