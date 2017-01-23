@@ -26,7 +26,7 @@ TICKET_TYPE_MAP = {
 }
 
 
-def slack_send_message(message):
+def slack_send_message(message: str):
     sc = SlackClient(SLACK_TOKEN)
 
     sc.api_call(
@@ -36,12 +36,14 @@ def slack_send_message(message):
     )
 
 
-def send_message(message):
+def send_message(message: str):
     slack_send_message(message)
     print(message)
 
 
-def send_notification(train_info, ticket_type, train_date, from_station, to_station):
+def send_notification(
+        train_info: Mapping[str, str], ticket_type: str, train_date: str,
+        from_station: str, to_station: str):
     message = ('日期：{train_date} 类型：{ticket_type} 车次：{train_code} '
                '开车时间：{start_time}  到达时间：{arrive_time} 车票类型:{ticket_type} '
                '余票：{left_ticket} '
@@ -57,7 +59,9 @@ def send_notification(train_info, ticket_type, train_date, from_station, to_stat
     send_message(message)
 
 
-def get_train_info(train_date, from_station, to_station='HZH') -> List[Mapping[str, str]]:
+def get_train_info(
+        train_date: str, from_station: str,
+        to_station: str) -> List[Mapping[str, str]]:
     # url = "https://kyfw.12306.cn/otn/leftTicket/queryZ"
     url = 'https://kyfw.12306.cn/otn/leftTicket/queryZ?' \
           'leftTicketDTO.train_date={train_date}' \
