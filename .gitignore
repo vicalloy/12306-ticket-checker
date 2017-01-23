@@ -87,3 +87,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# others
+.idea/
+conf.py
+pass_code.jpg
