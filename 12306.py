@@ -133,6 +133,7 @@ class TicketChecker(object):
                             send_notification(train_info, ok_ticket_type, train_date, from_station, to_station)
 
 
-ticket_checker = TicketChecker(TRAIN_DATES, FROM_STATIONS, TO_STATIONS, TICKET_TYPES, NEED_COUNT)
-while True:
-    ticket_checker.check_ticket()
+if __name__ == '__main__':
+    ticket_checker = TicketChecker(TRAIN_DATES, FROM_STATIONS, TO_STATIONS, TICKET_TYPES, NEED_COUNT)
+    while True:
+        ticket_checker.check_ticket()

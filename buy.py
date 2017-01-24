@@ -73,20 +73,21 @@ def login(username: str, password: str, rand_code: str) -> bool:
         return False
 
 
-if not get_pass_code():
-    print("get pass code fail")
-    exit(1)
+if __name__ == '__main__':
+    if not get_pass_code():
+        print("get pass code fail")
+        exit(1)
 
-_pass_code = input("Please input image index: ")
-_rand_code = get_rand_code(_pass_code)
+    _pass_code = input("Please input image index: ")
+    _rand_code = get_rand_code(_pass_code)
 
-if _rand_code:
-    print("pass code ok")
-else:
-    print("pass code fail")
-    exit(1)
+    if _rand_code:
+        print("pass code ok")
+    else:
+        print("pass code fail")
+        exit(1)
 
-if login(USERNAME, PASSWORD, _rand_code):
-    print("login ok")
-else:
-    print("login fail")
+    if login(USERNAME, PASSWORD, _rand_code):
+        print("login ok")
+    else:
+        print("login fail")
