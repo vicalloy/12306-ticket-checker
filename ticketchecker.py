@@ -82,6 +82,8 @@ def get_train_info(
         url = url.format(**params)
         r = requests.get(url, verify=False)
         return_data = r.json()
+        train_info_list = []
+        [e['queryLeftNewDTO']['secretStr'] for e in return_data['secretStr']]
         train_info_list = [e['queryLeftNewDTO'] for e in return_data['data']]
         print('get_train_info succ')
     except Exception:
@@ -121,16 +123,23 @@ class TicketChecker(object):
                 ok_ticket_types.append(ticket_type)
         return ok_ticket_types
 
+    def get_ok_ticket_list(self, train_info_list):
+        ticket_list = []
+        for train_info in train_info_list:
+            ok_ticket_types = self.get_ok_ticket_types(train_info)
+            for ticket_type in ok_ticket_types:
+                ticket_list.append([train_info, ticket_type])
+        return ticket_list
+
     def check_ticket(self):
         for train_date in self.train_dates:
             for from_station in self.from_stations:
                 for to_station in self.to_stations:
                     time.sleep(INTERVAL_FOR_QUERY)  # sleep
                     train_info_list = get_train_info(train_date, from_station, to_station)
-                    for train_info in train_info_list:
-                        ok_ticket_types = self.get_ok_ticket_types(train_info)
-                        for ok_ticket_type in ok_ticket_types:
-                            send_notification(train_info, ok_ticket_type, train_date, from_station, to_station)
+                    ticket_list = self.get_ok_ticket_list(train_info_list)
+                    for ticket_info in ticket_list:
+                        send_notification(ticket_info[0], ticket_info[1], train_date, from_station, to_station)
 
 
 if __name__ == '__main__':
