@@ -4,8 +4,6 @@ from typing import List
 from typing import Mapping
 import time
 
-import requests
-
 from slackclient import SlackClient
 from conf import SLACK_TOKEN
 from conf import TRAIN_DATES, FROM_STATIONS, TO_STATIONS, TICKET_TYPES, NEED_COUNT
@@ -59,38 +57,6 @@ def send_notification(
     send_message(message)
 
 
-def get_train_info(
-        train_date: str, from_station: str,
-        to_station: str) -> List[Mapping[str, str]]:
-    # url = "https://kyfw.12306.cn/otn/leftTicket/queryZ"
-    url = 'https://kyfw.12306.cn/otn/leftTicket/queryZ?' \
-          'leftTicketDTO.train_date={train_date}' \
-          '&leftTicketDTO.from_station={from_station}' \
-          '&leftTicketDTO.to_station={to_station}' \
-          '&purpose_codes=ADULT'
-    params = {
-        'train_date': train_date,  # leftTicketDTO.
-        'from_station': from_station,  # leftTicketDTO.
-        'to_station': to_station,  # leftTicketDTO.
-        'purpose_codes': 'ADULT',
-    }
-    train_info_list = []
-    # noinspection PyBroadException
-    try:
-        # FIXME use params will fail on some server, the reason is unkonwn
-        # r = requests.get(url, params=params, verify=False)
-        url = url.format(**params)
-        r = requests.get(url, verify=False)
-        return_data = r.json()
-        train_info_list = []
-        [e['queryLeftNewDTO']['secretStr'] for e in return_data['secretStr']]
-        train_info_list = [e['queryLeftNewDTO'] for e in return_data['data']]
-        print('get_train_info succ')
-    except Exception:
-        print('get_train_info fail')
-    return train_info_list
-
-
 def get_left_ticket(ticket_type: str, train_info) -> int:
     """
     str_count: --,无,有,1,12
@@ -106,14 +72,47 @@ def get_left_ticket(ticket_type: str, train_info) -> int:
 
 class TicketChecker(object):
     def __init__(
-            self, train_dates: List[str], from_stations: List[str],
+            self, session, train_dates: List[str], from_stations: List[str],
             to_stations: List[str], ticket_types: List[str], need_count: int):
         super(TicketChecker, self).__init__()
+        self.session = session
         self.train_dates = train_dates
         self.from_stations = from_stations
         self.to_stations = to_stations
         self.ticket_types = ticket_types
         self.need_count = need_count
+
+    def get_train_info(
+            self, train_date: str, from_station: str,
+            to_station: str) -> List[Mapping[str, str]]:
+        # url = "https://kyfw.12306.cn/otn/leftTicket/queryZ"
+        url = 'https://kyfw.12306.cn/otn/leftTicket/queryZ?' \
+              'leftTicketDTO.train_date={train_date}' \
+              '&leftTicketDTO.from_station={from_station}' \
+              '&leftTicketDTO.to_station={to_station}' \
+              '&purpose_codes=ADULT'
+        params = {
+            'train_date': train_date,  # leftTicketDTO.
+            'from_station': from_station,  # leftTicketDTO.
+            'to_station': to_station,  # leftTicketDTO.
+            'purpose_codes': 'ADULT',
+        }
+        train_info_list = []
+        # noinspection PyBroadException
+        try:
+            # FIXME use params will fail on some server, the reason is unkonwn
+            # r = requests.get(url, params=params, verify=False)
+            url = url.format(**params)
+            r = self.session.get(url, verify=False)
+            return_data = r.json()
+            train_info_list = []
+            for e in return_data['data']:
+                e['queryLeftNewDTO']['secretStr'] = e['secretStr']
+            train_info_list = [e['queryLeftNewDTO'] for e in return_data['data']]
+            print('get_train_info succ')
+        except Exception:
+            print('get_train_info fail')
+        return train_info_list
 
     def get_ok_ticket_types(self, train_info: Mapping[str, str]) -> List[str]:
         ok_ticket_types = []
@@ -123,7 +122,8 @@ class TicketChecker(object):
                 ok_ticket_types.append(ticket_type)
         return ok_ticket_types
 
-    def get_ok_ticket_list(self, train_info_list):
+    def get_ok_ticket_list(self, train_date, from_station, to_station):
+        train_info_list = self.get_train_info(train_date, from_station, to_station)
         ticket_list = []
         for train_info in train_info_list:
             ok_ticket_types = self.get_ok_ticket_types(train_info)
@@ -136,13 +136,14 @@ class TicketChecker(object):
             for from_station in self.from_stations:
                 for to_station in self.to_stations:
                     time.sleep(INTERVAL_FOR_QUERY)  # sleep
-                    train_info_list = get_train_info(train_date, from_station, to_station)
-                    ticket_list = self.get_ok_ticket_list(train_info_list)
+                    ticket_list = self.get_ok_ticket_list(train_date, from_station, to_station)
                     for ticket_info in ticket_list:
                         send_notification(ticket_info[0], ticket_info[1], train_date, from_station, to_station)
 
 
 if __name__ == '__main__':
-    ticket_checker = TicketChecker(TRAIN_DATES, FROM_STATIONS, TO_STATIONS, TICKET_TYPES, NEED_COUNT)
+    import requests
+    _session = requests.Session()
+    ticket_checker = TicketChecker(_session, TRAIN_DATES, FROM_STATIONS, TO_STATIONS, TICKET_TYPES, NEED_COUNT)
     while True:
         ticket_checker.check_ticket()
